@@ -17,7 +17,7 @@ fun main() {
             title = "DailyQuoteSaver",
         ) {
 
-            QuoteScreen(repository)
+            App(repository)
         }
     }
 }

@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            QuoteScreen(repository)
+            App(repository)
         }
     }
 }
