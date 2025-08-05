@@ -146,7 +146,7 @@ private fun AiGenerationForm(
             enabled = uiState !is GenerateUiState.Loading
         )
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onGenerateClick, enabled = prompt.isNotBlank() && uiState !is GenerateUiState.Loading) {
+        Button(onClick = { onGenerateClick() }, enabled = prompt.isNotBlank() && uiState !is GenerateUiState.Loading) {
             Text("Generate")
         }
         Spacer(Modifier.height(24.dp))

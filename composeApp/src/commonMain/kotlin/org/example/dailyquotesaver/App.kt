@@ -13,7 +13,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import org.example.dailyquotesaver.data.QuoteRepository
-import org.example.dailyquotesaver.network.AIQuoteService
+import org.example.dailyquotesaver.network.GeminiQuoteService
+//import org.example.dailyquotesaver.network.GeminiQuoteService
 import org.example.dailyquotesaver.ui.AddOrGenerateScreen
 import org.example.dailyquotesaver.ui.EditQuoteScreen
 import org.example.dailyquotesaver.ui.FavoritesScreen
@@ -32,7 +33,9 @@ fun App(repo: QuoteRepository) {
     val allQuotes by repo.quotes.collectAsState(emptyList())
     val scope = rememberCoroutineScope()
 
-    val aiService = remember { AIQuoteService() }
+
+
+    val aiService = remember { GeminiQuoteService() }
     var generateUiState by remember { mutableStateOf<GenerateUiState>(GenerateUiState.Idle) }
 
     var quoteToDelete: Quote? by remember { mutableStateOf(null) }

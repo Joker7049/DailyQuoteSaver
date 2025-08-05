@@ -1,83 +1,48 @@
+// In file: composeApp/src/commonMain/kotlin/org/example/dailyquotesaver/network/GeminiQuoteService.kt
+
 package org.example.dailyquotesaver.network
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+
+import dev.shreyaspatil.ai.client.generativeai.GenerativeModel
 import org.example.dailyquotesaver.BuildKonfig
-import org.example.dailyquotesaver.network.dto.Content
-import org.example.dailyquotesaver.network.dto.GenerateContentRequest
-import org.example.dailyquotesaver.network.dto.GenerateContentResponse
-import org.example.dailyquotesaver.network.dto.GenerationConfig
-import org.example.dailyquotesaver.network.dto.Part
 
-/**
- * AIQuoteService: send Gemini prompts and fetch generated text.
- *
- * @param apiKey Your secret Gemini/Generative Language API key.
- * @param modelName Which Gemini model you want (e.g. "gemini-2.5-pro").
- * @param location Your Cloud project location (defaults to "us-central1").
- */
+// We no longer need Ktor, so we can remove those imports.
+// We also no longer need the DTO imports.
+
+
+
+
 class GeminiQuoteService(
-    private val client: HttpClient, // Primary dependency first
-    private val modelName: String = "gemini-2.5-pro"
-): AiQuoteApi{
+    // We can still allow the model name to be passed in, for flexibility.
+    private val modelName: String = "gemini-2.0-flash" // Let's use a standard, reliable model name to start.
+) : AiQuoteApi {
+
+    // 1. We create the GenerativeModel instance right here in the class.
+    //    It's configured with the model name and the API key from BuildKonfig.
+    private val generativeModel = GenerativeModel(
+        modelName = modelName,
+        apiKey = BuildKonfig.GEMINI_API_KEY
+    )
 
 
 
-    private val apiKey = BuildKonfig.GEMINI_API_KEY
-    private val endpointBase =
-        "https://generativelanguage.googleapis.com/v1beta1/models"
 
-
-
-    /**
-     * Send prompt to Gemini, return the first generated answer or throw an error.
-     */
     override suspend fun generateQuote(mood: String): String {
-        // Build request body
-        val promptText = "Generate a short, inspiring quote for someone who is feeling: $mood"
-        val part = Part(text = promptText)
-        val content = Content(parts = listOf(part))
-        val request = GenerateContentRequest(
-            contents = content,
-            generationConfig = GenerationConfig(
-                temperature = 0.7,
-                candidateCount = 1,
-                maxOutputTokens = 150
-            )
-        )
+        // 2. We build the prompt string, just like before.
+        val prompt = "Generate a short, inspiring quote for someone who is feeling: $mood"
 
-        // URL is "models/{modelName}:generateContent"
-        val url = "$endpointBase/models/$modelName:generateContent"
+        try {
+            // 3. We call the SDK's generateContent function with our prompt.
+            val response = generativeModel.generateContent(prompt)
 
-
-        val resp = client.post(url) {
-            url {
-                parameters.append("key", apiKey)
-            }
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }.body<GenerateContentResponse>()
-
-        // Error handling
-        resp.error?.let {
-            throw Exception("Gemini API error: ${it.message}")
+            // 4. We safely get the text from the response. If it's null or blank,
+            //    we'll throw an exception.
+            return response.text ?: throw Exception("Gemini returned a null or empty response.")
+        } catch (e: Exception) {
+            // 5. If anything goes wrong (network error, API key issue, etc.),
+            //    we'll catch the exception and re-throw it with a more informative message.
+            //    The original exception `e` will contain the detailed error from the SDK.
+            throw Exception("Failed to generate quote from Gemini: ${e.message}", e)
         }
-
-        val candidates = resp.candidates
-        if (candidates.isNullOrEmpty()) {
-            throw Exception("Gemini returned no candidates")
-        }
-
-        // Take the first candidate's first text
-        val text = candidates.first().content.parts.firstOrNull()?.text
-        return text ?: throw Exception("Failed to extract Gemini answer")
-    }
-
-    fun close() {
-        client.close()
     }
 }

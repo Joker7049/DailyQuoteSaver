@@ -31,13 +31,24 @@ plugins {
 
 // in your-shared-module/build.gradle.kts
 
+// In file: composeApp/build.gradle.kts
+
+// In file: composeApp/build.gradle.kts
+
 buildkonfig {
     packageName = "org.example.dailyquotesaver"
 
+    // This block correctly provides the fields to ALL targets (android, ios, desktop)
     defaultConfigs {
+        // The Gemini key that your new code needs
         buildConfigField(
-            // This is the fix. We use FieldSpec.Type.STRING
-            // instead of the raw string "String".
+            type = FieldSpec.Type.STRING,
+            name = "GEMINI_API_KEY",
+            value = localProperties.getProperty("GEMINI_API_KEY", "")
+        )
+
+        // The old OpenAI key, just in case
+        buildConfigField(
             type = FieldSpec.Type.STRING,
             name = "OPENAI_API_KEY",
             value = localProperties.getProperty("OPENAI_API_KEY", "")
@@ -98,6 +109,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.genai)
 
 
 

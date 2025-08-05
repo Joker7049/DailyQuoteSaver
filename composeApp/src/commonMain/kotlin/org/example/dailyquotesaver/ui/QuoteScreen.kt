@@ -130,6 +130,7 @@ fun QuoteScreen(
                     )
                 }
             }
+
         }
     }
 }
