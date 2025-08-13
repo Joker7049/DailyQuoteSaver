@@ -1,12 +1,13 @@
 package org.example.dailyquotesaver.ui
 
+import FancyButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
@@ -15,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,16 +28,20 @@ import org.example.dailyquotesaver.Quote
 import org.example.dailyquotesaver.data.QuoteRepository
 
 /**
- * Composable function for the main screen of the application.
- * Displays a list of quotes, a search bar, a button to go to favorites,
- * and a floating action button to add new quotes.
+ * Composable function for the content of the quote screen.
+ * Displays a list of quotes, a search bar, and a tag filter banner.
+ * This composable is meant to be used as the content of a Scaffold.
  *
- * It also includes a dialog for adding new quotes, which is shown when
- * the floating action button is clicked.
- *
- * @param allQuotes List of all quotes to display.
+ * @param quotes List of all quotes to display.
  * @param repository Repository for interacting with quote data.
- * @param onGoToFavorites Callback function to navigate to the favorites screen.
+ * @param searchQuery Current search query.
+ * @param onSearchQueryChange Callback for when the search query changes.
+ * @param activeTagFilter Currently active tag filter.
+ * @param onTagClick Callback for when a tag is clicked.
+ * @param onClearTagFilter Callback to clear the active tag filter.
+ * @param onDeleteRequest Callback to request deletion of a quote.
+ * @param onEditClick Callback for when the edit action for a quote is clicked.
+ * @param contentPadding Padding to apply to the root layout, typically from a Scaffold.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,88 +53,103 @@ fun QuoteScreen(
     activeTagFilter: String?,
     onTagClick: (String) -> Unit,
     onClearTagFilter: () -> Unit,
-    onGoToFavorites: () -> Unit,
     onDeleteRequest: (Long) -> Unit,
     onEditClick: (Quote) -> Unit,
-    onAddClick: () -> Unit
+
 ) {
     val scope = rememberCoroutineScope()
 
+    Column(
+        modifier = Modifier
+
+            .padding(horizontal = 16.dp)
+    ) {
+        SearchField(
+            query = searchQuery,
+            onQueryChange = onSearchQueryChange
+        )
+
+        TagFilterBanner(
+            activeTag = activeTagFilter,
+            onClear = onClearTagFilter
+        )
+
+        QuoteList(
+            quotes = quotes,
+            searchQuery = searchQuery,
+            onTagClick = onTagClick,
+            onDeleteRequest = onDeleteRequest,
+            onEditClick = onEditClick,
+            onFavoriteClick = { quoteId ->
+                scope.launch { repository.toggleFavorite(quoteId) }
+            },
+            contentPadding = PaddingValues(0.dp) // Internal padding for the list
+        )
+    }
+}
 
 
-
-
-
-
-
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("My Quotes") },
-                actions = {
-                    Button(onClick = onGoToFavorites) {
-                        Text("Favorites")
-                    }
-                }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuoteTopBar(onGoToFavorites: () -> Unit) { // Made public
+    TopAppBar(
+        title = { Text("My Quotes") },
+        actions = {
+            FancyButton(
+                text = "Favorites",
+                onClick = onGoToFavorites,
+                modifier = Modifier.size(width = 100.dp, height = 50.dp)
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    onAddClick()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "adding a new quote"
-                )
-            }
         }
-    ) { paddingValues ->
-        Column(
+    )
+}
+
+
+@Composable
+fun AddQuoteFab(onAddClick: () -> Unit) { // Made public
+    FloatingActionButton(onClick = onAddClick) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = "Add a new quote"
+        )
+    }
+}
+
+
+@Composable
+private fun SearchField(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        value = query,
+        onValueChange = onQueryChange,
+        label = { Text("Search by text or author") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") }
+    )
+}
+
+
+@Composable
+private fun TagFilterBanner(
+    activeTag: String?,
+    onClear: () -> Unit
+) {
+    if (activeTag != null) {
+        Row(
             modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                value = searchQuery,
-                onValueChange = { onSearchQueryChange(it) },
-                label = { Text("Search by text or author") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") }
-            )
-
-            if (activeTagFilter != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Filtering by: #$activeTagFilter")
-                    Button(onClick = { onClearTagFilter() }) { // <-- Use the lambda
-                        Text("Clear")
-                    }
-                }
+            Text("Filtering by: #$activeTag")
+            Button(onClick = onClear) {
+                Text("Clear")
             }
-
-            LazyColumn {
-                items(quotes) { quote ->
-                    QuoteCard(
-                        quote = quote,
-                        onFavoriteClick = { quoteId ->
-                            scope.launch {
-                                repository.toggleFavorite(quoteId)
-                            }
-                        },
-                        onDeleteRequest = onDeleteRequest,
-                        searchQuery = searchQuery,
-                        onTagClick = onTagClick,
-                        onEditClick = onEditClick
-                    )
-                }
-            }
-
         }
     }
 }

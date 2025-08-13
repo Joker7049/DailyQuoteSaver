@@ -2,12 +2,21 @@
 
 package org.example.dailyquotesaver.ui
 
+import FancyButton
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -22,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,32 +41,24 @@ import androidx.compose.ui.unit.dp
 
 private enum class AddMode { MANUAL, AI }
 
+private data class ManualEntryFormState(
+    val quoteText: String = "",
+    val author: String = "",
+    val tags: String = ""
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddOrGenerateScreen(
     generateUiState: GenerateUiState,
     onSaveQuote: (text: String, author: String, tags: String) -> Unit,
     onGenerateQuote: (prompt: String) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    resetGenerateUiState: () -> Unit
 ) {
     var mode by remember { mutableStateOf(AddMode.MANUAL) }
-
-    // State for the manual form fields
-    var manualQuoteText by remember { mutableStateOf("") }
-    var manualAuthor by remember { mutableStateOf("") }
-    var manualTags by remember { mutableStateOf("") }
-
-    // State for the AI prompt field
-    var prompt by remember { mutableStateOf("") }
-
-    // This effect reacts when the AI successfully generates a quote.
-    // It pre-fills the manual form and switches the view.
-    LaunchedEffect(generateUiState) {
-        if (generateUiState is GenerateUiState.Success) {
-            manualQuoteText = generateUiState.quote
-            mode = AddMode.MANUAL
-        }
-    }
+    var manualFormState by remember { mutableStateOf(ManualEntryFormState()) }
+    var prompt by remember { mutableStateOf("") } // State for the AI prompt field
 
     Scaffold(
         topBar = {
@@ -88,45 +88,71 @@ fun AddOrGenerateScreen(
             // --- Conditional UI ---
             when (mode) {
                 AddMode.MANUAL -> ManualEntryForm(
-                    quoteText = manualQuoteText,
-                    onQuoteTextChange = { manualQuoteText = it },
-                    author = manualAuthor,
-                    onAuthorChange = { manualAuthor = it },
-                    tags = manualTags,
-                    onTagsChange = { manualTags = it },
-                    onSaveClick = { onSaveQuote(manualQuoteText, manualAuthor, manualTags) }
+                    formState = manualFormState,
+                    onFormStateChange = { manualFormState = it },
+                    onSaveClick = {
+                        onSaveQuote(
+                            manualFormState.quoteText,
+                            manualFormState.author,
+                            manualFormState.tags
+                        )
+                    }
                 )
                 AddMode.AI -> AiGenerationForm(
                     prompt = prompt,
                     onPromptChange = { prompt = it },
                     uiState = generateUiState,
-                    onGenerateClick = { onGenerateQuote(prompt) }
+                    onGenerateClick = { onGenerateQuote(prompt) },
+                    onAcceptQuote = { generatedQuote ->
+                        manualFormState = ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
+                        mode = AddMode.MANUAL
+                    },
+                    onClearPrompt = {
+                        prompt = ""
+                        resetGenerateUiState()
+                    }
                 )
             }
         }
     }
 }
 
-
 // --- Private Helper Composables for Cleanliness ---
 
 @Composable
 private fun ManualEntryForm(
-    quoteText: String, onQuoteTextChange: (String) -> Unit,
-    author: String, onAuthorChange: (String) -> Unit,
-    tags: String, onTagsChange: (String) -> Unit,
+    formState: ManualEntryFormState,
+    onFormStateChange: (ManualEntryFormState) -> Unit,
     onSaveClick: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(value = quoteText, onValueChange = onQuoteTextChange, label = { Text("Quote") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = formState.quoteText,
+            onValueChange = { onFormStateChange(formState.copy(quoteText = it)) },
+            label = { Text("Quote") },
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(value = author, onValueChange = onAuthorChange, label = { Text("Author (optional)") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = formState.author,
+            onValueChange = { onFormStateChange(formState.copy(author = it)) },
+            label = { Text("Author (optional)") },
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(value = tags, onValueChange = onTagsChange, label = { Text("Tags (comma-separated)") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = formState.tags,
+            onValueChange = { onFormStateChange(formState.copy(tags = it)) },
+            label = { Text("Tags (comma-separated)") },
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onSaveClick, enabled = quoteText.isNotBlank()) {
-            Text("Save Quote")
-        }
+        FancyButton(
+            text = "Save Quote",
+            onClick = onSaveClick,
+            enabled = formState.quoteText.isNotBlank(),
+            modifier = Modifier.size(height = 50.dp, width = 120.dp)
+        )
     }
 }
 
@@ -135,7 +161,9 @@ private fun AiGenerationForm(
     prompt: String,
     onPromptChange: (String) -> Unit,
     uiState: GenerateUiState,
-    onGenerateClick: () -> Unit
+    onGenerateClick: () -> Unit,
+    onAcceptQuote: (String) -> Unit,
+    onClearPrompt: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -146,19 +174,98 @@ private fun AiGenerationForm(
             enabled = uiState !is GenerateUiState.Loading
         )
         Spacer(Modifier.height(16.dp))
-        Button(onClick = { onGenerateClick() }, enabled = prompt.isNotBlank() && uiState !is GenerateUiState.Loading) {
-            Text("Generate")
+        AnimatedVisibility(
+            visible = uiState is GenerateUiState.Idle,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ){
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                FancyButton(
+                    text = "Generate",
+                    onClick = onGenerateClick,
+                    enabled = prompt.isNotBlank(),
+                )
+            }
         }
+
         Spacer(Modifier.height(24.dp))
 
         when (uiState) {
             is GenerateUiState.Loading -> CircularProgressIndicator()
-            is GenerateUiState.Error -> Text(text = uiState.message, color = MaterialTheme.colorScheme.error)
-            is GenerateUiState.Success -> Text(
-                "Quote generated! Switched to manual mode for you to edit and save.",
-                style = MaterialTheme.typography.bodySmall
-            )
+            is GenerateUiState.Error -> {
+                AiErrorView(
+                    errorMessage = uiState.message,
+                    onTryAgain = { onGenerateClick() }
+                )
+            }
+            is GenerateUiState.Success -> {
+                AiSuccessView(
+                    generatedQuote = uiState.quote,
+                    onGenerateAgain = { onGenerateClick() },
+                    onUseQuote = {
+                        onAcceptQuote(uiState.quote)
+                        onClearPrompt() // This was already here, makes sense to keep
+                    }
+                )
+            }
             is GenerateUiState.Idle -> { /* Nothing to show */ }
+        }
+    }
+}
+
+
+@Composable
+fun AiSuccessView(
+    modifier: Modifier = Modifier,
+    generatedQuote: String,
+    onGenerateAgain: () -> Unit,
+    onUseQuote: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+
+    ){
+        OutlinedTextField(
+            value = generatedQuote,
+            onValueChange = {},
+            readOnly = true,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
+        )
+        Spacer(Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ){
+            Button(onClick = { onGenerateAgain() }) {
+                Text("Generate Again")
+            }
+            Button(onClick = { onUseQuote() }) {
+                Text("Use This Quote")
+            }
+        }
+    }
+}
+
+
+@Composable
+fun AiErrorView(
+    modifier: Modifier = Modifier,
+    errorMessage: String,
+    onTryAgain: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ){
+        Text(errorMessage, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = { onTryAgain() }) {
+            Text("Try Again")
         }
     }
 }

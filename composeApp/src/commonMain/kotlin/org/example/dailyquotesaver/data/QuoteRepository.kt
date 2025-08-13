@@ -4,10 +4,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.Flow // <-- Import Flow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map // <-- Import map operator for Flow
-import kotlinx.serialization.encodeToString
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import org.example.dailyquotesaver.Quote
 
@@ -102,6 +101,15 @@ class QuoteRepository(
 
 
 
+    /**
+     * Updates an existing quote in the DataStore.
+     *
+     * This function retrieves the current list of quotes, finds the quote with the
+     * same ID as the provided `quote` object, and replaces it with the new `quote` object.
+     * The updated list of quotes is then saved back to DataStore.
+     *
+     * @param quote The [Quote] object containing the updated information.
+     */
     suspend fun updateQuote(quote: Quote) {
         prefs.edit { data ->
             val currentQuotes = quotes.first()
@@ -121,19 +129,16 @@ class QuoteRepository(
 
 
 
+    /**
+     * Deletes a quote from the DataStore.
+     *
+     * This function retrieves the current list of quotes, removes the quote with
+     * the specified ID, and then saves the updated list back to DataStore.
+     *
+     * @param quoteId The ID of the quote to be deleted.
+     */
     suspend fun deleteQuote(quoteId: Long) {
-        /*
-         * YOUR IMPLEMENTATION HERE
-         *
-         * This will be very similar to your `toggleFavorite` function.
-         * 1. Use `prefs.edit { ... }`.
-         * 2. Get the `currentQuotes` list from the `quotes.first()` flow.
-         * 3. Create an `updatedQuotes` list. Instead of `.map()`, a different
-         *    list function might be more direct for removing an item.
-         *    Think about how you can filter the list to keep everything
-         *    *except* the quote with the matching `quoteId`.
-         * 4. Save the `updatedQuotes` list back to DataStore as a JSON string.
-         */
+
         prefs.edit { data ->
             val currentQuotes = quotes.first()
             val updatedQuotes = currentQuotes.filter { it.id != quoteId }

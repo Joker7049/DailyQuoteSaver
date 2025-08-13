@@ -1,9 +1,11 @@
+
 package org.example.dailyquotesaver.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.example.dailyquotesaver.Quote
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditQuoteScreen(
@@ -34,9 +36,8 @@ fun EditQuoteScreen(
     onSaveClick: (Quote) -> Unit,
     onCancelClick: () -> Unit
 ) {
-
     var newQuoteText by remember { mutableStateOf(quoteToEdit.text) }
-    var newQuoteAuthor by remember { mutableStateOf(quoteToEdit.author ?: "") }
+    var newQuoteAuthor by remember { mutableStateOf(quoteToEdit.author.orEmpty()) }
     var newQuoteTags by remember { mutableStateOf(quoteToEdit.tags.joinToString(",")) }
 
     Scaffold(
@@ -49,59 +50,107 @@ fun EditQuoteScreen(
                     }
                 }
             )
-        },
-    ) { paddingValues ->
-        Column(
+        }
+    ) { padding ->
+        QuoteForm(
+            quoteText = newQuoteText,
+            author = newQuoteAuthor,
+            tags = newQuoteTags,
+            onQuoteTextChange = { newQuoteText = it },
+            onAuthorChange = { newQuoteAuthor = it },
+            onTagsChange = { newQuoteTags = it },
+            isSaveEnabled = true, // additional external conditions if you have them
+            onSaveClick = {
+                val text = newQuoteText.trim()
+                if (text.isBlank()) return@QuoteForm // guard (button already disabled, but safe)
+
+                val tagList = newQuoteTags
+                    .split(',')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+
+                val updated = quoteToEdit.copy(
+                    text = text,
+                    author = newQuoteAuthor.trim().ifBlank { null },
+                    tags = tagList
+                )
+                onSaveClick(updated)
+            },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            OutlinedTextField(
-                value = newQuoteText,
-                onValueChange = { newQuoteText = it },
-                label = { Text("Quote") }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = newQuoteAuthor,
-                onValueChange = { newQuoteAuthor = it },
-                label = { Text("Author (optional)") }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = newQuoteTags,
-                onValueChange = { newQuoteTags = it },
-                label = { Text("Tags (comma-separated)") }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = {
-                    val tagList = if (newQuoteTags.isNotBlank()) {
-                        newQuoteTags.split(',')
-                            .map { tag ->
-                                tag.trim()
-                            }
-                            .filter { tag ->
-                                tag.isNotBlank()
-                            }
-                    } else {
-                        emptyList<String>()
-                    }
-                    val updatedQuote = quoteToEdit.copy(text = newQuoteText, author = newQuoteAuthor.ifBlank { null }, tags = tagList)
-                    onSaveClick(updatedQuote)
-                },
-                enabled = newQuoteText.isNotBlank()
-            ) {
-                Text("Save")
-            }
-
-        }
-
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+        )
     }
+}
 
+
+@Composable
+fun QuoteForm(
+    quoteText: String,
+    author: String,
+    tags: String,
+    onQuoteTextChange: (String) -> Unit,
+    onAuthorChange: (String) -> Unit,
+    onTagsChange: (String) -> Unit,
+    onSaveClick: () -> Unit,
+    isSaveEnabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // --- Quote with validation ---
+        val isQuoteError = quoteText.isBlank()
+        OutlinedTextField(
+            value = quoteText,
+            onValueChange = onQuoteTextChange,
+            label = { Text("Quote") },
+            isError = isQuoteError,
+            supportingText = {
+                if (isQuoteError) {
+                    Text(
+                        text = "Quote cannot be empty",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            singleLine = false,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        // Author (optional)
+        OutlinedTextField(
+            value = author,
+            onValueChange = onAuthorChange,
+            label = { Text("Author (optional)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        // Tags (comma-separated)
+        OutlinedTextField(
+            value = tags,
+            onValueChange = onTagsChange,
+            label = { Text("Tags (comma-separated)") },
+            singleLine = false,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Button(
+            onClick = onSaveClick,
+            enabled = !isQuoteError && isSaveEnabled,
+        ) {
+            Text("Save")
+        }
+    }
 }

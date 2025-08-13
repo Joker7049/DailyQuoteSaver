@@ -1,79 +1,114 @@
 package org.example.dailyquotesaver.ui
 
-// in org/example/dailyquotesaver/ui/FavoritesScreen.kt
 
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.example.dailyquotesaver.Quote
 
+/**
+ * Displays the screen for managing favorite quotes.
+ *
+ * This screen shows a list of favorite quotes. If there are no favorite quotes,
+ * a message indicating that is displayed. Users can interact with the quotes
+ * by clicking on them to toggle their favorite status, deleting them, clicking on tags,
+ * or editing them.
+ *
+ * @param favoriteQuotes The list of quotes marked as favorites.
+ * @param onFavoriteClick A callback function invoked when the favorite icon of a quote is clicked.
+ *                        It receives the ID of the quote.
+ * @param onDeleteRequest A callback function invoked when a request to delete a quote is made.
+ *                        It receives the ID of the quote to be deleted.
+ * @param onBack A callback function invoked when the back button in the top app bar is clicked.
+ * @param onTagClick A callback function invoked when a tag on a quote card is clicked.
+ *                   It receives the tag string.
+ * @param onEditClick A callback function invoked when the edit action for a quote is clicked.
+ *                    It receives the [Quote] object to be edited.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    // This screen receives the list of quotes that are ALREADY filtered to be favorites.
     favoriteQuotes: List<Quote>,
-
-    // This is the same function from our main screen for when a heart icon is clicked.
     onFavoriteClick: (Long) -> Unit,
-
     onDeleteRequest: (Long) -> Unit,
-
-    // A new function to signal that we want to go back to the previous screen.
     onBack: () -> Unit,
     onTagClick: (String) -> Unit,
     onEditClick: (Quote) -> Unit
 ) {
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Favorite Quotes") },
-                navigationIcon = {
-                    // We need an icon button here that shows a back arrow.
-                    // When it's clicked, what should it do?
-                    IconButton(onClick = { onBack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-        }
+        topBar = { FavoritesTopBar(onBack) }
     ) { paddingValues ->
-        // We need a list that can scroll. LazyColumn is perfect for this.
-        // It takes the list of favorite quotes and creates a row for each one.
-        LazyColumn(modifier = Modifier.padding(paddingValues)) {
-
-            items(favoriteQuotes) { quote ->
-                // For each 'quote' in our list, what Composable should we display?
-                // Think about the reusable component we just built.
-                // It needs two parameters passed to it.
-
-                QuoteCard(
-                    quote = quote,
+        Column(modifier = Modifier.padding(paddingValues)) {
+            if (favoriteQuotes.isEmpty()) {
+                EmptyFavoritesMessage()
+            } else {
+                QuoteList(
+                    quotes = favoriteQuotes,
+                    searchQuery = null, // no highlight needed here (or pass a value if you want)
                     onFavoriteClick = onFavoriteClick,
                     onDeleteRequest = onDeleteRequest,
                     onTagClick = onTagClick,
-                    onEditClick = onEditClick
+                    onEditClick = onEditClick,
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = paddingValues.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding()
+                    ),
+                    emptyContent = { EmptyFavoritesMessage() }
                 )
 
-                /*
-                 * YOUR CODE HERE
-                 *
-                 * Hint: You need to call a Composable function.
-                 * It takes a `quote` object and an `onFavoriteClick` lambda.
-                 */
             }
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FavoritesTopBar(onBack: () -> Unit) {
+    TopAppBar(
+        title = { Text("Favorite Quotes") },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+        }
+    )
+}
+
+
+@Composable
+private fun EmptyFavoritesMessage() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No favorite quotes yet.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+        )
+    }
+}
+

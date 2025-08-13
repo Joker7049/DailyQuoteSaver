@@ -4,7 +4,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import org.example.dailyquotesaver.data.QuoteRepository
 import org.example.dailyquotesaver.data.createDataStoreDesktop
-import org.example.dailyquotesaver.ui.QuoteScreen
 
 fun main() {
 
