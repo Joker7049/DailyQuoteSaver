@@ -52,6 +52,7 @@ import org.example.dailyquotesaver.ui.GenerateUiState
 import org.example.dailyquotesaver.ui.HomeScreen
 import org.example.dailyquotesaver.ui.QuoteScreen
 import org.example.dailyquotesaver.ui.QuoteTopBar
+import org.example.dailyquotesaver.ui.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class Screen { QUOTE, FAVORITES, Edit, ADD_OR_GENERATE, Home }
@@ -84,7 +85,7 @@ fun App(repo: QuoteRepository) {
     }
     val randomQuote = remember(allQuotes) { allQuotes.randomOrNull() }
 
-    MaterialTheme {
+    AppTheme {
         Scaffold(
             topBar = {
                 if (currentScreen == Screen.QUOTE) {

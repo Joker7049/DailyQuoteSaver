@@ -1,5 +1,4 @@
 
-
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -7,15 +6,12 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
 
-
 // Load properties from local.properties file
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
-val openAiApiKey = localProperties.getProperty("OPENAI_API_KEY")
-
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -26,14 +22,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.buildkonfig)
 }
-
-// in your-shared-module/build.gradle.kts
-
-// in your-shared-module/build.gradle.kts
-
-// In file: composeApp/build.gradle.kts
-
-// In file: composeApp/build.gradle.kts
 
 buildkonfig {
     packageName = "org.example.dailyquotesaver"
@@ -57,9 +45,6 @@ buildkonfig {
 }
 
 kotlin {
-
-
-
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -78,16 +63,12 @@ kotlin {
         }
     }
 
-    jvm("desktop") { // <<< This is the desktop target
+    jvm("desktop") {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21) // <<< Set this for desktop compilation!
+            jvmTarget.set(JvmTarget.JVM_21) //
         }
     }
-
-
-
-
 
     sourceSets {
         val desktopMain by getting
@@ -95,11 +76,9 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-
             implementation(libs.ktor.client.okhttp)
-
-
         }
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -111,40 +90,29 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.genai)
 
-
-
             api(libs.kotlinx.serialization.json)
-
-            //implementation(libs.compose.materialIconsExtended)
             implementation(compose.materialIconsExtended)
-
             implementation("androidx.datastore:datastore:1.1.7")
             implementation("androidx.datastore:datastore-preferences:1.1.7")
 
             implementation(libs.ktor.client.logging)
-
             implementation(libs.bundles.ktor.common)
-
-
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
 
-        nativeMain.dependencies {
+        nativeMain.dependencies { // Assuming nativeMain is still used or planned
             implementation(libs.ktor.client.darwin)
-
         }
+
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-
             implementation(libs.ktor.client.cio)
-
         }
     }
-
-
 }
 
 android {
@@ -158,11 +126,13 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -179,13 +149,10 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-// ... (rest of your build.gradle.kts)
-
 compose.desktop {
     application {
         mainClass = "org.example.dailyquotesaver.MainKt"
         javaHome = "C:/Program Files/Microsoft/jdk-21.0.8.9-hotspot" // Keep this line
-        //jvmTarget.set(JvmTarget.JVM_21) // Keep this line for compilation
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
@@ -197,5 +164,3 @@ compose.desktop {
         }
     }
 }
-
-
