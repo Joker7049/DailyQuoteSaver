@@ -83,7 +83,8 @@ fun App(repo: QuoteRepository) {
                 }
         )
     }
-    val randomQuote = remember(allQuotes) { allQuotes.randomOrNull() }
+    var randomQuoteTrigger by remember { mutableStateOf(0) }
+    val randomQuote = remember(allQuotes, randomQuoteTrigger) { allQuotes.randomOrNull() }
 
     AppTheme {
         Scaffold(
@@ -204,6 +205,7 @@ fun App(repo: QuoteRepository) {
 
                     Screen.Home -> HomeScreen(
                         quote = randomQuote,
+                        onRefresh = { randomQuoteTrigger++ }
                     )
                 }
             }

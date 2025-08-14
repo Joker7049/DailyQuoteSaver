@@ -152,7 +152,6 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "org.example.dailyquotesaver.MainKt"
-        javaHome = "C:/Program Files/Microsoft/jdk-21.0.8.9-hotspot" // Keep this line
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
