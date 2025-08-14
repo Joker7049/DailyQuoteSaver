@@ -52,6 +52,7 @@ import org.example.dailyquotesaver.ui.GenerateUiState
 import org.example.dailyquotesaver.ui.HomeScreen
 import org.example.dailyquotesaver.ui.QuoteScreen
 import org.example.dailyquotesaver.ui.QuoteTopBar
+import org.example.dailyquotesaver.ui.ElegantBottomBar
 import org.example.dailyquotesaver.ui.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -96,9 +97,13 @@ fun App(repo: QuoteRepository) {
                 // else if (currentScreen == Screen.ANOTHER_SCREEN) { AnotherTopBar() }
             },
             bottomBar = {
-                // Only show the bottom bar for the main screens
                 if (currentScreen == Screen.Home || currentScreen == Screen.QUOTE) {
-                    CreativeWaveBottomBar(
+                    val navItems = listOf(
+                        BottomNavItem(label = "Home", screen = Screen.Home, icon = Icons.Default.Home),
+                        BottomNavItem(label = "Quotes", screen = Screen.QUOTE, icon = Icons.Default.FormatQuote)
+                    )
+                    ElegantBottomBar(
+                        navItems = navItems,
                         currentScreen = currentScreen,
                         onTabSelected = { screen -> currentScreen = screen }
                     )
