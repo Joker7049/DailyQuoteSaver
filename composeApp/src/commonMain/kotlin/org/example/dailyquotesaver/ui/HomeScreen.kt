@@ -27,10 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,8 +43,6 @@ import org.example.dailyquotesaver.ui.theme.primaryLight
 
 @Composable
 fun HomeScreen(quote: Quote?, onRefresh: () -> Unit) {
-    var currentQuote by remember(quote) { mutableStateOf(quote) }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -74,8 +69,9 @@ fun HomeScreen(quote: Quote?, onRefresh: () -> Unit) {
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(32.dp))
+
             AnimatedContent(
-                targetState = currentQuote,
+                targetState = quote,
                 transitionSpec = {
                     fadeIn(initialAlpha = 0.3f) togetherWith fadeOut(targetAlpha = 0.3f)
                 }
@@ -84,12 +80,10 @@ fun HomeScreen(quote: Quote?, onRefresh: () -> Unit) {
                     QuoteCard(quote = quoteToShow)
                 } else {
                     CircularProgressIndicator()
-                    onRefresh()
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
             RefreshButton(onClick = {
-                currentQuote = null
                 onRefresh()
             })
         }
@@ -115,9 +109,11 @@ private fun QuoteCard(quote: Quote, modifier: Modifier = Modifier) {
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
+                modifier = Modifier.fillMaxWidth(),
                 text = "“${quote.text}”",
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center,

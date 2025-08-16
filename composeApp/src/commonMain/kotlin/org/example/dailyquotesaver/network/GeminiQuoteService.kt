@@ -6,12 +6,6 @@ package org.example.dailyquotesaver.network
 import dev.shreyaspatil.ai.client.generativeai.GenerativeModel
 import org.example.dailyquotesaver.BuildKonfig
 
-// We no longer need Ktor, so we can remove those imports.
-// We also no longer need the DTO imports.
-
-
-
-
 class GeminiQuoteService(
     // We can still allow the model name to be passed in, for flexibility.
     private val modelName: String = "gemini-2.0-flash" // Let's use a standard, reliable model name to start.
@@ -23,9 +17,6 @@ class GeminiQuoteService(
         modelName = modelName,
         apiKey = BuildKonfig.GEMINI_API_KEY
     )
-
-
-
 
     override suspend fun generateQuote(mood: String): String {
         // 2. We build the prompt string, just like before.
