@@ -1,5 +1,6 @@
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -160,6 +161,10 @@ compose.desktop {
             // *** ADD THIS LINE ***
             modules("jdk.unsupported") // Include the module that contains sun.misc.Unsafe
             // *** END OF ADDED LINE ***
+
+            windows {
+                iconFile.set(project.file("src/desktopMain/res/drawable/desktop_icon.ico"))
+            }
         }
     }
 }
