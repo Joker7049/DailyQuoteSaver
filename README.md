@@ -1,6 +1,6 @@
 # Daily Quote Saver 🌟
 
-![Kotlin](https://kotlinlang.org)
+![Kotlin](https://kotlinlang.org/)
 ![KMP](https://img.shields.io/badge/Kotlin%20Multiplatform-7F52FF?style=for-the-badge)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=android&logoColor=white)
 
