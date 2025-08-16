@@ -1,6 +1,6 @@
-
 package org.example.dailyquotesaver.ui
 
+// Removed: import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,17 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,24 +28,16 @@ import org.example.dailyquotesaver.Quote
 fun EditQuoteScreen(
     quoteToEdit: Quote,
     onSaveClick: (Quote) -> Unit,
-    onCancelClick: () -> Unit
+    modifier: Modifier = Modifier // Added modifier parameter
 ) {
     var newQuoteText by remember { mutableStateOf(quoteToEdit.text) }
     var newQuoteAuthor by remember { mutableStateOf(quoteToEdit.author.orEmpty()) }
     var newQuoteTags by remember { mutableStateOf(quoteToEdit.tags.joinToString(",")) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit Quote") },
-                navigationIcon = {
-                    IconButton(onClick = onCancelClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    Column(
+        modifier = modifier // Apply the modifier passed from the parent (e.g., App.kt's Scaffold)
+            .fillMaxSize()     // Column fills the area provided by the parent
+    ) {
         QuoteForm(
             quoteText = newQuoteText,
             author = newQuoteAuthor,
@@ -77,9 +63,9 @@ fun EditQuoteScreen(
                 onSaveClick(updated)
             },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
+                .fillMaxWidth() // QuoteForm fills available width
+                .weight(1f)     // QuoteForm takes remaining vertical space in the Column
+                .padding(horizontal = 16.dp) // Specific horizontal padding for the form's content
         )
     }
 }

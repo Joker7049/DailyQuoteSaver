@@ -11,15 +11,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FormatQuote
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,17 +50,18 @@ import org.example.dailyquotesaver.network.GeminiQuoteService
 import org.example.dailyquotesaver.ui.AddOrGenerateScreen
 import org.example.dailyquotesaver.ui.AddQuoteFab
 import org.example.dailyquotesaver.ui.EditQuoteScreen
+import org.example.dailyquotesaver.ui.ElegantBottomBar
 import org.example.dailyquotesaver.ui.FavoritesScreen
 import org.example.dailyquotesaver.ui.GenerateUiState
 import org.example.dailyquotesaver.ui.HomeScreen
 import org.example.dailyquotesaver.ui.QuoteScreen
 import org.example.dailyquotesaver.ui.QuoteTopBar
-import org.example.dailyquotesaver.ui.ElegantBottomBar
 import org.example.dailyquotesaver.ui.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class Screen { QUOTE, FAVORITES, Edit, ADD_OR_GENERATE, Home }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun App(repo: QuoteRepository) {
@@ -93,7 +97,34 @@ fun App(repo: QuoteRepository) {
                 if (currentScreen == Screen.QUOTE) {
                     QuoteTopBar(onGoToFavorites = { currentScreen = Screen.FAVORITES })
                 }
-                // You can add other top bars for other screens here if needed
+                else if (currentScreen == Screen.FAVORITES) {
+                    TopAppBar(
+                        title = { Text("Favorite Quotes") },
+                        navigationIcon = {
+                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+                }else if (currentScreen == Screen.Edit) {
+                    TopAppBar(
+                        title = { Text("Edit Quote") },
+                        navigationIcon = {
+                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+                }else if (currentScreen == Screen.ADD_OR_GENERATE) {
+                    TopAppBar(
+                        title = { Text("Add a New Quote") },
+                        navigationIcon = {
+                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+                }
                 // else if (currentScreen == Screen.ANOTHER_SCREEN) { AnotherTopBar() }
             },
             bottomBar = {
@@ -156,7 +187,6 @@ fun App(repo: QuoteRepository) {
                         favoriteQuotes = allQuotes.filter { it.isFavorite },
                         onFavoriteClick = { scope.launch { repo.toggleFavorite(it) } },
                         onDeleteRequest = { id -> quoteToDelete = allQuotes.find { it.id == id } },
-                        onBack = { currentScreen = Screen.QUOTE },
                         onTagClick = { tag -> activeTagFilter = tag },
                         onEditClick = { quote -> editedQuote = quote; currentScreen = Screen.Edit }
                     )
@@ -170,13 +200,11 @@ fun App(repo: QuoteRepository) {
                                     currentScreen = Screen.QUOTE
                                 }
                             },
-                            onCancelClick = { currentScreen = Screen.QUOTE }
                         )
                     } ?: run { currentScreen = Screen.QUOTE }
 
                     Screen.ADD_OR_GENERATE -> AddOrGenerateScreen(
                         generateUiState = generateUiState,
-                        onNavigateBack = { currentScreen = Screen.QUOTE },
                         onGenerateQuote = { prompt ->
                             scope.launch {
                                 generateUiState = GenerateUiState.Loading

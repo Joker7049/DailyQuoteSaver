@@ -13,23 +13,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,68 +48,56 @@ fun AddOrGenerateScreen(
     generateUiState: GenerateUiState,
     onSaveQuote: (text: String, author: String, tags: String) -> Unit,
     onGenerateQuote: (prompt: String) -> Unit,
-    onNavigateBack: () -> Unit,
-    resetGenerateUiState: () -> Unit
+    resetGenerateUiState: () -> Unit,
+    modifier : Modifier = Modifier,
 ) {
     var mode by remember { mutableStateOf(AddMode.MANUAL) }
     var manualFormState by remember { mutableStateOf(ManualEntryFormState()) }
     var prompt by remember { mutableStateOf("") } // State for the AI prompt field
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Add a New Quote") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
+    Column(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // --- Mode Selector ---
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(selected = mode == AddMode.MANUAL, onClick = { mode = AddMode.MANUAL })
+            Text("Write Manually", modifier = Modifier.padding(start = 4.dp, end = 16.dp))
+            RadioButton(selected = mode == AddMode.AI, onClick = { mode = AddMode.AI })
+            Text("Generate with AI", modifier = Modifier.padding(start = 4.dp))
+        }
+        Spacer(Modifier.height(24.dp))
+
+        // --- Conditional UI ---
+        when (mode) {
+            AddMode.MANUAL -> ManualEntryForm(
+                formState = manualFormState,
+                onFormStateChange = { manualFormState = it },
+                onSaveClick = {
+                    onSaveQuote(
+                        manualFormState.quoteText,
+                        manualFormState.author,
+                        manualFormState.tags
+                    )
+                }
+            )
+            AddMode.AI -> AiGenerationForm(
+                prompt = prompt,
+                onPromptChange = { prompt = it },
+                uiState = generateUiState,
+                onGenerateClick = { onGenerateQuote(prompt) },
+                onAcceptQuote = { generatedQuote ->
+                    manualFormState = ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
+                    mode = AddMode.MANUAL
+                },
+                onClearPrompt = {
+                    prompt = ""
+                    resetGenerateUiState()
                 }
             )
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.padding(paddingValues).padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // --- Mode Selector ---
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = mode == AddMode.MANUAL, onClick = { mode = AddMode.MANUAL })
-                Text("Write Manually", modifier = Modifier.padding(start = 4.dp, end = 16.dp))
-                RadioButton(selected = mode == AddMode.AI, onClick = { mode = AddMode.AI })
-                Text("Generate with AI", modifier = Modifier.padding(start = 4.dp))
-            }
-            Spacer(Modifier.height(24.dp))
-
-            // --- Conditional UI ---
-            when (mode) {
-                AddMode.MANUAL -> ManualEntryForm(
-                    formState = manualFormState,
-                    onFormStateChange = { manualFormState = it },
-                    onSaveClick = {
-                        onSaveQuote(
-                            manualFormState.quoteText,
-                            manualFormState.author,
-                            manualFormState.tags
-                        )
-                    }
-                )
-                AddMode.AI -> AiGenerationForm(
-                    prompt = prompt,
-                    onPromptChange = { prompt = it },
-                    uiState = generateUiState,
-                    onGenerateClick = { onGenerateQuote(prompt) },
-                    onAcceptQuote = { generatedQuote ->
-                        manualFormState = ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
-                        mode = AddMode.MANUAL
-                    },
-                    onClearPrompt = {
-                        prompt = ""
-                        resetGenerateUiState()
-                    }
-                )
-            }
-        }
     }
+
 }
 
 // --- Private Helper Composables for Cleanliness ---
@@ -163,9 +146,10 @@ private fun AiGenerationForm(
     uiState: GenerateUiState,
     onGenerateClick: () -> Unit,
     onAcceptQuote: (String) -> Unit,
-    onClearPrompt: () -> Unit
+    onClearPrompt: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = prompt,
             onValueChange = onPromptChange,

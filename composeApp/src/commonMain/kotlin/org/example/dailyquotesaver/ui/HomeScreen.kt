@@ -84,6 +84,7 @@ fun HomeScreen(quote: Quote?, onRefresh: () -> Unit) {
                     QuoteCard(quote = quoteToShow)
                 } else {
                     CircularProgressIndicator()
+                    onRefresh()
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
