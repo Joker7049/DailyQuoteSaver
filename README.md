@@ -6,7 +6,7 @@
 
 **A cross-platform app to save, view, and generate daily inspirational quotes.**  
 
-![App GIF](path/to/your-app-gif.gif)  
+![App GIF](media/home_screen.gif)  
 *Replace this GIF with a recording of your app in action.*
 
 ---
@@ -25,9 +25,9 @@
 
 *Replace with actual screenshots of your app:*  
 
-| Home Screen | AI Quote Generation |
-|-------------|-------------------|
-| ![Home](path/to/home-screenshot.png) | ![AI Quote](path/to/ai-quote-screenshot.png) |
+| Home Screen                     | AI Quote Generation               |
+|---------------------------------|-----------------------------------|
+| ![Home](media/quote_screen.png) | ![AI Quote](media/add_screen.png) |
 
 ---
 
