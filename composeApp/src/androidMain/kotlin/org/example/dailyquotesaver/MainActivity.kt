@@ -5,22 +5,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 
+import org.example.dailyquotesaver.data.ApiKeyRepository
 import org.example.dailyquotesaver.data.QuoteRepository
-
+import org.example.dailyquotesaver.data.createDataStore
 import org.example.dailyquotesaver.data.createDataStoreAndroid
-import org.example.dailyquotesaver.ui.QuoteScreen
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val prefs = createDataStoreAndroid(applicationContext)
-        val repository = QuoteRepository(prefs)
+        val dataStore = createDataStoreAndroid(applicationContext)
+        val quoteRepository = QuoteRepository(dataStore)
+        val apiKeyRepository = ApiKeyRepository(dataStore)
 
 
         setContent {
-            App(repository)
+            App(quoteRepository, apiKeyRepository)
         }
     }
 }

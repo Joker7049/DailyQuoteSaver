@@ -9,7 +9,7 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 
 @OptIn(ExperimentalForeignApi::class)
-fun createDataStoreNative(producePath: () -> String): DataStore<Preferences> = createDataStore {
+fun createDataStoreNative(): DataStore<Preferences> = createDataStore {
     val docDir: NSURL? = NSFileManager.defaultManager.URLForDirectory(
         directory = NSDocumentDirectory,
         inDomain = NSUserDomainMask,

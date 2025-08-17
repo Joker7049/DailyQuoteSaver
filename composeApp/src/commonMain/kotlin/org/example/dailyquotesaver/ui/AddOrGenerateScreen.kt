@@ -47,6 +47,12 @@ private data class ManualEntryFormState(
     val tags: String = ""
 )
 
+import org.example.dailyquotesaver.data.ApiKeyRepository
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.AlertDialog
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddOrGenerateScreen(
@@ -54,11 +60,38 @@ fun AddOrGenerateScreen(
     onSaveQuote: (text: String, author: String, tags: String) -> Unit,
     onGenerateQuote: (prompt: String) -> Unit,
     onNavigateBack: () -> Unit,
-    resetGenerateUiState: () -> Unit
+    resetGenerateUiState: () -> Unit,
+    apiKeyRepository: ApiKeyRepository,
+    onNavigateToSettings: () -> Unit
 ) {
     var mode by remember { mutableStateOf(AddMode.MANUAL) }
     var manualFormState by remember { mutableStateOf(ManualEntryFormState()) }
     var prompt by remember { mutableStateOf("") } // State for the AI prompt field
+    val scope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("API Key Required") },
+            text = { Text("Please set your OpenAI API key in the settings to use the AI generation feature.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        onNavigateToSettings()
+                    }
+                ) {
+                    Text("Go to Settings")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -80,7 +113,18 @@ fun AddOrGenerateScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(selected = mode == AddMode.MANUAL, onClick = { mode = AddMode.MANUAL })
                 Text("Write Manually", modifier = Modifier.padding(start = 4.dp, end = 16.dp))
-                RadioButton(selected = mode == AddMode.AI, onClick = { mode = AddMode.AI })
+                RadioButton(
+                    selected = mode == AddMode.AI,
+                    onClick = {
+                        scope.launch {
+                            if (apiKeyRepository.getApiKey().isNullOrBlank()) {
+                                showDialog = true
+                            } else {
+                                mode = AddMode.AI
+                            }
+                        }
+                    }
+                )
                 Text("Generate with AI", modifier = Modifier.padding(start = 4.dp))
             }
             Spacer(Modifier.height(24.dp))
@@ -98,13 +142,23 @@ fun AddOrGenerateScreen(
                         )
                     }
                 )
+
                 AddMode.AI -> AiGenerationForm(
                     prompt = prompt,
                     onPromptChange = { prompt = it },
                     uiState = generateUiState,
-                    onGenerateClick = { onGenerateQuote(prompt) },
+                    onGenerateClick = {
+                        scope.launch {
+                            if (apiKeyRepository.getApiKey().isNullOrBlank()) {
+                                showDialog = true
+                            } else {
+                                onGenerateQuote(prompt)
+                            }
+                        }
+                    },
                     onAcceptQuote = { generatedQuote ->
-                        manualFormState = ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
+                        manualFormState =
+                            ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
                         mode = AddMode.MANUAL
                     },
                     onClearPrompt = {

@@ -91,7 +91,7 @@ fun QuoteScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuoteTopBar(onGoToFavorites: () -> Unit) { // Made public
+fun QuoteTopBar(onGoToFavorites: () -> Unit, onGoToSettings: () -> Unit) { // Made public
     TopAppBar(
         title = { Text("My Quotes") },
         actions = {
@@ -100,6 +100,12 @@ fun QuoteTopBar(onGoToFavorites: () -> Unit) { // Made public
                 onClick = onGoToFavorites,
                 modifier = Modifier.size(width = 100.dp, height = 50.dp)
             )
+            IconButton(onClick = onGoToSettings) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings"
+                )
+            }
         }
     )
 }
