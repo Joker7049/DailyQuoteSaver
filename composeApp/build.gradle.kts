@@ -53,6 +53,7 @@ kotlin {
         }
     }
 
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -120,6 +121,16 @@ android {
     namespace = "org.example.dailyquotesaver"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("my-release-key.jks") // path to your keystore
+            storePassword = "Joker@3030"        // the password you typed
+            keyAlias = "mykey"                        // the alias from step 1
+            keyPassword = "Joker@3030"          // same as store password
+        }
+    }
+
     defaultConfig {
         applicationId = "org.example.dailyquotesaver"
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -137,6 +148,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

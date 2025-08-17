@@ -1,6 +1,5 @@
 package org.example.dailyquotesaver.ui
 
-import FancyButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -95,11 +95,20 @@ fun QuoteTopBar(onGoToFavorites: () -> Unit) { // Made public
     TopAppBar(
         title = { Text("My Quotes") },
         actions = {
-            FancyButton(
+            /*FancyButton(
                 text = "Favorites",
                 onClick = onGoToFavorites,
                 modifier = Modifier.size(width = 100.dp, height = 50.dp)
-            )
+            )*/
+            Button(
+                onClick = onGoToFavorites,
+                colors = ButtonDefaults.buttonColors(
+
+                ),
+                modifier = Modifier.size(width = 100.dp, height = 50.dp)
+            ){
+                Text("Favorites")
+            }
         }
     )
 }
