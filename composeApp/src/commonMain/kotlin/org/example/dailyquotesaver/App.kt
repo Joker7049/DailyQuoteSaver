@@ -48,7 +48,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.example.dailyquotesaver.data.ApiKeyRepository
 import org.example.dailyquotesaver.data.QuoteRepository
+import org.example.dailyquotesaver.network.ApiKeyNotFoundException
 import org.example.dailyquotesaver.network.GeminiQuoteService
 import org.example.dailyquotesaver.ui.AddOrGenerateScreen
 import org.example.dailyquotesaver.ui.AddQuoteFab
@@ -56,22 +58,25 @@ import org.example.dailyquotesaver.ui.EditQuoteScreen
 import org.example.dailyquotesaver.ui.ElegantBottomBar
 import org.example.dailyquotesaver.ui.FavoritesScreen
 import org.example.dailyquotesaver.ui.GenerateUiState
+import org.example.dailyquotesaver.ui.GenerateUiState.*
 import org.example.dailyquotesaver.ui.HomeScreen
 import org.example.dailyquotesaver.ui.QuoteScreen
 import org.example.dailyquotesaver.ui.QuoteTopBar
+import org.example.dailyquotesaver.ui.SettingsScreen
 import org.example.dailyquotesaver.ui.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-enum class Screen { QUOTE, FAVORITES, Edit, ADD_OR_GENERATE, Home }
+enum class Screen { QUOTE, FAVORITES, Edit, ADD_OR_GENERATE, Home, SETTINGS }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun App(repo: QuoteRepository) {
+fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
     var currentScreen by remember { mutableStateOf(Screen.Home) }
+    // ... (the rest of your state variables are unchanged)
     val allQuotes by repo.quotes.collectAsState(emptyList())
     val scope = rememberCoroutineScope()
-    val aiService = remember { GeminiQuoteService() }
+    val aiService = remember { GeminiQuoteService(apiKeyRepository) }
     var generateUiState by remember { mutableStateOf<GenerateUiState>(GenerateUiState.Idle) }
     var searchQuery by remember { mutableStateOf("") }
     var activeTagFilter by remember { mutableStateOf<String?>((null)) }
@@ -121,35 +126,44 @@ fun App(repo: QuoteRepository) {
         Scaffold(
             topBar = {
                 if (currentScreen == Screen.QUOTE) {
-                    QuoteTopBar(onGoToFavorites = { currentScreen = Screen.FAVORITES })
-                } else if (currentScreen == Screen.FAVORITES) {
-                    TopAppBar(
-                        title = { Text("Favorite Quotes") },
-                        navigationIcon = {
-                            IconButton(onClick = { currentScreen = Screen.QUOTE }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                        }
+                    QuoteTopBar(
+                        onGoToFavorites = { currentScreen = Screen.FAVORITES },
+                        onGoToSettings = { currentScreen = Screen.SETTINGS }
                     )
-                } else if (currentScreen == Screen.Edit) {
-                    TopAppBar(
-                        title = { Text("Edit Quote") },
-                        navigationIcon = {
-                            IconButton(onClick = { currentScreen = Screen.QUOTE }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                        }
-                    )
-                } else if (currentScreen == Screen.ADD_OR_GENERATE) {
+                }
+                else if(currentScreen == Screen.ADD_OR_GENERATE){
                     TopAppBar(
                         title = { Text("Add a New Quote") },
                         navigationIcon = {
-                            IconButton(onClick = { currentScreen = Screen.QUOTE }) {
+                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+
+                }
+                else if(currentScreen == Screen.FAVORITES){
+                    TopAppBar(
+                        title = { Text("Favorite Quotes") },
+                        navigationIcon = {
+                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
                         }
                     )
                 }
+                else if(currentScreen == Screen.Edit){
+                    TopAppBar(
+                        title = { Text("Edit Quote") },
+                        navigationIcon = {
+                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+                }
+                // You can add other top bars for other screens here if needed
+                // else if (currentScreen == Screen.ANOTHER_SCREEN) { AnotherTopBar() }
             },
             bottomBar = {
                 if (currentScreen == Screen.Home || currentScreen == Screen.QUOTE) {
@@ -158,10 +172,10 @@ fun App(repo: QuoteRepository) {
                         BottomNavItem(label = "Quotes", screen = Screen.QUOTE, icon = Icons.Default.FormatQuote)
                     )
                     ElegantBottomBar(
-                        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
                         navItems = navItems,
                         currentScreen = currentScreen,
-                        onTabSelected = { screen -> currentScreen = screen }
+                        onTabSelected = { screen -> currentScreen = screen },
+                        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
                     )
                 }
             },
@@ -169,9 +183,11 @@ fun App(repo: QuoteRepository) {
                 if (currentScreen == Screen.QUOTE) {
                     AddQuoteFab(onAddClick = { currentScreen = Screen.ADD_OR_GENERATE })
                 }
+                // You can add other FABs for other screens here if needed
             }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
+                // ... (Your AlertDialog and when(currentScreen) block are unchanged)
                 quoteToDelete?.let { quote ->
                     AlertDialog(
                         onDismissRequest = { quoteToDelete = null },
@@ -228,15 +244,21 @@ fun App(repo: QuoteRepository) {
 
                     Screen.ADD_OR_GENERATE -> AddOrGenerateScreen(
                         generateUiState = generateUiState,
+                        onNavigateBack = { currentScreen = Screen.QUOTE },
                         onGenerateQuote = { prompt ->
                             scope.launch {
                                 generateUiState = GenerateUiState.Loading
                                 try {
                                     val result = aiService.generateQuote(prompt)
-                                    generateUiState = GenerateUiState.Success(result)
-                                } catch (e: Exception) {
+                                    generateUiState = Success(result)
+                                } catch (e: ApiKeyNotFoundException) {
+                                    println("AI Generation Failed: ${e.message}")
                                     generateUiState =
-                                        GenerateUiState.Error("Sorry, something went wrong. Please try again.")
+                                        Error("API Key not found. Please add it in settings.")
+                                } catch (e: Exception) {
+                                    println("AI Generation Failed: ${e.message}")
+                                    generateUiState =
+                                        Error("Sorry, something went wrong. Please try again.")
                                 }
                             }
                         },
@@ -255,18 +277,26 @@ fun App(repo: QuoteRepository) {
                                 currentScreen = Screen.QUOTE
                             }
                         },
-                        resetGenerateUiState = { generateUiState = GenerateUiState.Idle }
+                        resetGenerateUiState = { generateUiState = GenerateUiState.Idle },
+                        apiKeyRepository = apiKeyRepository,
+                        onNavigateToSettings = { currentScreen = Screen.SETTINGS }
                     )
 
                     Screen.Home -> HomeScreen(
                         quote = currentRandomQuote,
                         onRefresh = { selectNewRandomQuote() }
                     )
+
+                    Screen.SETTINGS -> TODO()
                 }
             }
         }
     }
 }
+
+// ===================================================================
+// ==  ADAPTED "CREATIVE WAVE" COMPOSABLES
+// ===================================================================
 
 /**
  * The custom shape for the bottom bar.
@@ -295,6 +325,7 @@ class WaveBottomBarShape(private val dip: Float = 0.15f) : Shape {
     }
 }
 
+// Data class for navigation items (same as before)
 data class BottomNavItem(
     val label: String,
     val screen: Screen,
