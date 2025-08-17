@@ -58,7 +58,6 @@ import org.example.dailyquotesaver.ui.EditQuoteScreen
 import org.example.dailyquotesaver.ui.ElegantBottomBar
 import org.example.dailyquotesaver.ui.FavoritesScreen
 import org.example.dailyquotesaver.ui.GenerateUiState
-import org.example.dailyquotesaver.ui.GenerateUiState.*
 import org.example.dailyquotesaver.ui.HomeScreen
 import org.example.dailyquotesaver.ui.QuoteScreen
 import org.example.dailyquotesaver.ui.QuoteTopBar
@@ -96,30 +95,25 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
         )
     }
 
-    var currentRandomQuote by remember { mutableStateOf<Quote?>(allQuotes.randomOrNull()) }
+    var randomQuote by remember(allQuotes) { mutableStateOf(allQuotes.randomOrNull()) }
 
-    remember(allQuotes) {
-        if (allQuotes.isNotEmpty() && currentRandomQuote == null) {
-            currentRandomQuote = allQuotes.randomOrNull()
-        }
-    }
+    fun pickRandomQuote():Quote?{
+        val quoteToAvoid = randomQuote
 
-    fun selectNewRandomQuote() {
-        if (allQuotes.isEmpty()) {
-            currentRandomQuote = null
-            return
+        if(allQuotes.isEmpty()){
+            return null
         }
-        if (allQuotes.size == 1) {
-            currentRandomQuote = allQuotes.first()
-            return
+        if (allQuotes.size == 1){
+            return allQuotes.first()
         }
 
-        val quoteToAvoid = currentRandomQuote
-        var newQuote: Quote?
+
         do {
-            newQuote = allQuotes.randomOrNull()
-        } while (newQuote == quoteToAvoid && allQuotes.size > 1)
-        currentRandomQuote = newQuote
+            randomQuote = allQuotes.randomOrNull()
+        } while (randomQuote == quoteToAvoid)
+
+        return randomQuote
+
     }
 
     AppTheme {
@@ -250,15 +244,15 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
                                 generateUiState = GenerateUiState.Loading
                                 try {
                                     val result = aiService.generateQuote(prompt)
-                                    generateUiState = Success(result)
+                                    generateUiState = GenerateUiState.Success(result)
                                 } catch (e: ApiKeyNotFoundException) {
                                     println("AI Generation Failed: ${e.message}")
                                     generateUiState =
-                                        Error("API Key not found. Please add it in settings.")
+                                        GenerateUiState.Error("API Key not found. Please add it in settings.")
                                 } catch (e: Exception) {
                                     println("AI Generation Failed: ${e.message}")
                                     generateUiState =
-                                        Error("Sorry, something went wrong. Please try again.")
+                                        GenerateUiState.Error("Sorry, something went wrong. Please try again.")
                                 }
                             }
                         },
@@ -283,11 +277,13 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
                     )
 
                     Screen.Home -> HomeScreen(
-                        quote = currentRandomQuote,
-                        onRefresh = { selectNewRandomQuote() }
+                        quote = randomQuote,
+                        onRefresh = { pickRandomQuote() }
                     )
-
-                    Screen.SETTINGS -> TODO()
+                    Screen.SETTINGS -> SettingsScreen(
+                        apiKeyRepository = apiKeyRepository,
+                        onNavigateBack = { currentScreen = Screen.QUOTE }
+                    )
                 }
             }
         }

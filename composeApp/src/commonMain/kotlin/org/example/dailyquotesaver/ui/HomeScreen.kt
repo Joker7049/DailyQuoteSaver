@@ -43,6 +43,7 @@ import org.example.dailyquotesaver.ui.theme.primaryLight
 
 @Composable
 fun HomeScreen(quote: Quote?, onRefresh: () -> Unit) {
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +70,6 @@ fun HomeScreen(quote: Quote?, onRefresh: () -> Unit) {
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(32.dp))
-
             AnimatedContent(
                 targetState = quote,
                 transitionSpec = {

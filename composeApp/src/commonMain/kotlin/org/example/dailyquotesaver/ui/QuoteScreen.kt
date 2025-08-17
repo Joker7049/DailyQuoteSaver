@@ -1,5 +1,6 @@
 package org.example.dailyquotesaver.ui
 
+import FancyButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,11 +11,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -91,23 +93,20 @@ fun QuoteScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuoteTopBar(onGoToFavorites: () -> Unit) { // Made public
+fun QuoteTopBar(onGoToFavorites: () -> Unit, onGoToSettings: () -> Unit) { // Made public
     TopAppBar(
         title = { Text("My Quotes") },
         actions = {
-            /*FancyButton(
+            FancyButton(
                 text = "Favorites",
                 onClick = onGoToFavorites,
                 modifier = Modifier.size(width = 100.dp, height = 50.dp)
-            )*/
-            Button(
-                onClick = onGoToFavorites,
-                colors = ButtonDefaults.buttonColors(
-
-                ),
-                modifier = Modifier.size(width = 100.dp, height = 50.dp)
-            ){
-                Text("Favorites")
+            )
+            IconButton(onClick = onGoToSettings) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings"
+                )
             }
         }
     )

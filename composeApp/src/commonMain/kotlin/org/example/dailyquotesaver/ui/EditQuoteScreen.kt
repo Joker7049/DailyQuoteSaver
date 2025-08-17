@@ -1,3 +1,4 @@
+
 package org.example.dailyquotesaver.ui
 
 import androidx.compose.foundation.layout.Arrangement
@@ -27,46 +28,40 @@ import org.example.dailyquotesaver.Quote
 fun EditQuoteScreen(
     quoteToEdit: Quote,
     onSaveClick: (Quote) -> Unit,
-    modifier: Modifier = Modifier // Added modifier parameter
 ) {
     var newQuoteText by remember { mutableStateOf(quoteToEdit.text) }
     var newQuoteAuthor by remember { mutableStateOf(quoteToEdit.author.orEmpty()) }
     var newQuoteTags by remember { mutableStateOf(quoteToEdit.tags.joinToString(",")) }
 
-    Column(
-        modifier = modifier // Apply the modifier passed from the parent (e.g., App.kt's Scaffold)
-            .fillMaxSize()     // Column fills the area provided by the parent
-    ) {
-        QuoteForm(
-            quoteText = newQuoteText,
-            author = newQuoteAuthor,
-            tags = newQuoteTags,
-            onQuoteTextChange = { newQuoteText = it },
-            onAuthorChange = { newQuoteAuthor = it },
-            onTagsChange = { newQuoteTags = it },
-            isSaveEnabled = true, // additional external conditions if you have them
-            onSaveClick = {
-                val text = newQuoteText.trim()
-                if (text.isBlank()) return@QuoteForm // guard (button already disabled, but safe)
+    QuoteForm(
+        quoteText = newQuoteText,
+        author = newQuoteAuthor,
+        tags = newQuoteTags,
+        onQuoteTextChange = { newQuoteText = it },
+        onAuthorChange = { newQuoteAuthor = it },
+        onTagsChange = { newQuoteTags = it },
+        isSaveEnabled = true, // additional external conditions if you have them
+        onSaveClick = {
+            val text = newQuoteText.trim()
+            if (text.isBlank()) return@QuoteForm // guard (button already disabled, but safe)
 
-                val tagList = newQuoteTags
-                    .split(',')
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
+            val tagList = newQuoteTags
+                .split(',')
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
 
-                val updated = quoteToEdit.copy(
-                    text = text,
-                    author = newQuoteAuthor.trim().ifBlank { null },
-                    tags = tagList
-                )
-                onSaveClick(updated)
-            },
-            modifier = Modifier
-                .fillMaxWidth() // QuoteForm fills available width
-                .weight(1f)     // QuoteForm takes remaining vertical space in the Column
-                .padding(horizontal = 16.dp) // Specific horizontal padding for the form's content
-        )
-    }
+            val updated = quoteToEdit.copy(
+                text = text,
+                author = newQuoteAuthor.trim().ifBlank { null },
+                tags = tagList
+            )
+            onSaveClick(updated)
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    )
+
 }
 
 
