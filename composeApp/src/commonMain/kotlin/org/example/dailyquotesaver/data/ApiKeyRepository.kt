@@ -10,6 +10,7 @@ class ApiKeyRepository(private val dataStore: DataStore<Preferences>) {
 
     private val apiKey = stringPreferencesKey("api_key")
 
+
     suspend fun getApiKey(): String? {
         return dataStore.data.first()[apiKey]
     }

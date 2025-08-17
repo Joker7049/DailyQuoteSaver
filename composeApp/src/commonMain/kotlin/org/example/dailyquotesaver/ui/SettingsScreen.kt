@@ -11,7 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,8 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.example.dailyquotesaver.data.ApiKeyRepository
-
-import androidx.compose.runtime.LaunchedEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +46,7 @@ fun SettingsScreen(apiKeyRepository: ApiKeyRepository, onNavigateBack: () -> Uni
         OutlinedTextField(
             value = apiKeyInput,
             onValueChange = { apiKeyInput = it },
-            label = { Text("OpenAI API Key") },
+            label = { Text("Gemini API Key") },
             placeholder = { Text("Enter your API key") }
         )
         Spacer(modifier = Modifier.height(16.dp))
