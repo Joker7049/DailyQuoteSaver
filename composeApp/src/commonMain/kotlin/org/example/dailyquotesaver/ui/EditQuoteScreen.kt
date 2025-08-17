@@ -8,17 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,54 +28,40 @@ import org.example.dailyquotesaver.Quote
 fun EditQuoteScreen(
     quoteToEdit: Quote,
     onSaveClick: (Quote) -> Unit,
-    onCancelClick: () -> Unit
 ) {
     var newQuoteText by remember { mutableStateOf(quoteToEdit.text) }
     var newQuoteAuthor by remember { mutableStateOf(quoteToEdit.author.orEmpty()) }
     var newQuoteTags by remember { mutableStateOf(quoteToEdit.tags.joinToString(",")) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit Quote") },
-                navigationIcon = {
-                    IconButton(onClick = onCancelClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+    QuoteForm(
+        quoteText = newQuoteText,
+        author = newQuoteAuthor,
+        tags = newQuoteTags,
+        onQuoteTextChange = { newQuoteText = it },
+        onAuthorChange = { newQuoteAuthor = it },
+        onTagsChange = { newQuoteTags = it },
+        isSaveEnabled = true, // additional external conditions if you have them
+        onSaveClick = {
+            val text = newQuoteText.trim()
+            if (text.isBlank()) return@QuoteForm // guard (button already disabled, but safe)
+
+            val tagList = newQuoteTags
+                .split(',')
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+
+            val updated = quoteToEdit.copy(
+                text = text,
+                author = newQuoteAuthor.trim().ifBlank { null },
+                tags = tagList
             )
-        }
-    ) { padding ->
-        QuoteForm(
-            quoteText = newQuoteText,
-            author = newQuoteAuthor,
-            tags = newQuoteTags,
-            onQuoteTextChange = { newQuoteText = it },
-            onAuthorChange = { newQuoteAuthor = it },
-            onTagsChange = { newQuoteTags = it },
-            isSaveEnabled = true, // additional external conditions if you have them
-            onSaveClick = {
-                val text = newQuoteText.trim()
-                if (text.isBlank()) return@QuoteForm // guard (button already disabled, but safe)
+            onSaveClick(updated)
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    )
 
-                val tagList = newQuoteTags
-                    .split(',')
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-
-                val updated = quoteToEdit.copy(
-                    text = text,
-                    author = newQuoteAuthor.trim().ifBlank { null },
-                    tags = tagList
-                )
-                onSaveClick(updated)
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-        )
-    }
 }
 
 

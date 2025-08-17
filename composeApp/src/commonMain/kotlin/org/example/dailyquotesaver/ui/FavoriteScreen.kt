@@ -13,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -47,36 +46,30 @@ fun FavoritesScreen(
     favoriteQuotes: List<Quote>,
     onFavoriteClick: (Long) -> Unit,
     onDeleteRequest: (Long) -> Unit,
-    onBack: () -> Unit,
     onTagClick: (String) -> Unit,
     onEditClick: (Quote) -> Unit
 ) {
-    Scaffold(
-        topBar = { FavoritesTopBar(onBack) }
-    ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            if (favoriteQuotes.isEmpty()) {
-                EmptyFavoritesMessage()
-            } else {
-                QuoteList(
-                    quotes = favoriteQuotes,
-                    searchQuery = null, // no highlight needed here (or pass a value if you want)
-                    onFavoriteClick = onFavoriteClick,
-                    onDeleteRequest = onDeleteRequest,
-                    onTagClick = onTagClick,
-                    onEditClick = onEditClick,
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = paddingValues.calculateTopPadding(),
-                        bottom = paddingValues.calculateBottomPadding()
-                    ),
-                    emptyContent = { EmptyFavoritesMessage() }
-                )
+    Column {
+        if (favoriteQuotes.isEmpty()) {
+            EmptyFavoritesMessage()
+        } else {
+            QuoteList(
+                quotes = favoriteQuotes,
+                searchQuery = null, // no highlight needed here (or pass a value if you want)
+                onFavoriteClick = onFavoriteClick,
+                onDeleteRequest = onDeleteRequest,
+                onTagClick = onTagClick,
+                onEditClick = onEditClick,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                ),
+                emptyContent = { EmptyFavoritesMessage() }
+            )
 
-            }
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

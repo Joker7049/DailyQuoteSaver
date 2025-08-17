@@ -2,6 +2,7 @@
 
 package org.example.dailyquotesaver.ui
 
+
 import FancyButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -13,24 +14,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,13 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.example.dailyquotesaver.data.ApiKeyRepository
 
-
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.collectAsState
-import androidx.compose.material3.AlertDialog
 private enum class AddMode { MANUAL, AI }
 
 private data class ManualEntryFormState(
@@ -66,7 +58,8 @@ fun AddOrGenerateScreen(
     onNavigateBack: () -> Unit,
     resetGenerateUiState: () -> Unit,
     apiKeyRepository: ApiKeyRepository,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var mode by remember { mutableStateOf(AddMode.MANUAL) }
     var manualFormState by remember { mutableStateOf(ManualEntryFormState()) }
@@ -97,82 +90,73 @@ fun AddOrGenerateScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Add a New Quote") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // --- Mode Selector ---
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(selected = mode == AddMode.MANUAL, onClick = { mode = AddMode.MANUAL })
+            Text("Write Manually", modifier = Modifier.padding(start = 4.dp, end = 16.dp))
+            RadioButton(
+                selected = mode == AddMode.AI,
+                onClick = {
+                    scope.launch {
+                        if (apiKeyRepository.getApiKey().isNullOrBlank()) {
+                            showDialog = true
+                        } else {
+                            mode = AddMode.AI
+                        }
                     }
                 }
             )
+            Text("Generate with AI", modifier = Modifier.padding(start = 4.dp))
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.padding(paddingValues).padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // --- Mode Selector ---
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = mode == AddMode.MANUAL, onClick = { mode = AddMode.MANUAL })
-                Text("Write Manually", modifier = Modifier.padding(start = 4.dp, end = 16.dp))
-                RadioButton(
-                    selected = mode == AddMode.AI,
-                    onClick = {
-                        scope.launch {
-                            if (apiKeyRepository.getApiKey().isNullOrBlank()) {
-                                showDialog = true
-                            } else {
-                                mode = AddMode.AI
-                            }
+        Spacer(Modifier.height(24.dp))
+
+        // --- Conditional UI ---
+        when (mode) {
+            AddMode.MANUAL -> ManualEntryForm(
+                formState = manualFormState,
+                onFormStateChange = { manualFormState = it },
+                onSaveClick = {
+                    onSaveQuote(
+                        manualFormState.quoteText,
+                        manualFormState.author,
+                        manualFormState.tags
+                    )
+                }
+            )
+
+            AddMode.AI -> AiGenerationForm(
+                prompt = prompt,
+                onPromptChange = { prompt = it },
+                uiState = generateUiState,
+                onGenerateClick = {
+                    scope.launch {
+                        if (apiKeyRepository.getApiKey().isNullOrBlank()) {
+                            showDialog = true
+                        } else {
+                            onGenerateQuote(prompt)
                         }
                     }
-                )
-                Text("Generate with AI", modifier = Modifier.padding(start = 4.dp))
-            }
-            Spacer(Modifier.height(24.dp))
-
-            // --- Conditional UI ---
-            when (mode) {
-                AddMode.MANUAL -> ManualEntryForm(
-                    formState = manualFormState,
-                    onFormStateChange = { manualFormState = it },
-                    onSaveClick = {
-                        onSaveQuote(
-                            manualFormState.quoteText,
-                            manualFormState.author,
-                            manualFormState.tags
-                        )
-                    }
-                )
-
-                AddMode.AI -> AiGenerationForm(
-                    prompt = prompt,
-                    onPromptChange = { prompt = it },
-                    uiState = generateUiState,
-                    onGenerateClick = {
-                        scope.launch {
-                            if (apiKeyRepository.getApiKey().isNullOrBlank()) {
-                                showDialog = true
-                            } else {
-                                onGenerateQuote(prompt)
-                            }
-                        }
-                    },
-                    onAcceptQuote = { generatedQuote ->
-                        manualFormState =
-                            ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
-                        mode = AddMode.MANUAL
-                    },
-                    onClearPrompt = {
-                        prompt = ""
-                        resetGenerateUiState()
-                    }
-                )
-            }
+                },
+                onAcceptQuote = { generatedQuote ->
+                    manualFormState =
+                        ManualEntryFormState(quoteText = generatedQuote) // Clears author and tags
+                    mode = AddMode.MANUAL
+                },
+                onClearPrompt = {
+                    prompt = ""
+                    resetGenerateUiState()
+                }
+            )
         }
     }
+
 }
 
 // --- Private Helper Composables for Cleanliness ---
