@@ -4,7 +4,6 @@ package org.example.dailyquotesaver.network
 
 
 import dev.shreyaspatil.ai.client.generativeai.GenerativeModel
-import kotlinx.coroutines.flow.first
 import org.example.dailyquotesaver.data.ApiKeyRepository
 
 // We no longer need Ktor, so we can remove those imports.

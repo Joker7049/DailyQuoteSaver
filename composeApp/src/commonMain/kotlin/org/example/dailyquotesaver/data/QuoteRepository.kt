@@ -98,9 +98,6 @@ class QuoteRepository(
     }
 
 
-
-
-
     /**
      * Updates an existing quote in the DataStore.
      *
@@ -114,19 +111,15 @@ class QuoteRepository(
         prefs.edit { data ->
             val currentQuotes = quotes.first()
             val updateQuotes = currentQuotes.map {
-                if (it.id == quote.id){
+                if (it.id == quote.id) {
                     quote
-                }else {
+                } else {
                     it
                 }
             }
             data[KEY_QUOTES] = Json.encodeToString(updateQuotes)
         }
     }
-
-
-
-
 
 
     /**

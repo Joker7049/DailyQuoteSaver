@@ -1,7 +1,6 @@
 package org.example.dailyquotesaver.ui
 
 
-
 import QuoteCard
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring

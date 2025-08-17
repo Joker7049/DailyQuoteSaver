@@ -1,4 +1,3 @@
-
 package org.example.dailyquotesaver.ui
 
 import androidx.compose.foundation.layout.Arrangement

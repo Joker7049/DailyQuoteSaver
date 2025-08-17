@@ -1,5 +1,3 @@
-
-
 package org.example.dailyquotesaver.ui
 
 import androidx.compose.material3.MaterialTheme

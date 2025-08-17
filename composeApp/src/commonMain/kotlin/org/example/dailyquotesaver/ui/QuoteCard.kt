@@ -1,4 +1,3 @@
-
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
@@ -175,9 +174,11 @@ private fun rememberDismissState(
             SwipeToDismissBoxValue.StartToEnd -> {
                 onEdit(); state.reset()
             }
+
             SwipeToDismissBoxValue.EndToStart -> {
                 onDelete(); state.reset()
             }
+
             else -> {}
         }
     }
@@ -239,7 +240,8 @@ private fun QuoteCardContent(
             ) {
                 IconButton(onClick = onFavoriteClick) {
                     Crossfade(targetState = quote.isFavorite) { isFavorite ->
-                        val icon = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+                        val icon =
+                            if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
                         Icon(
                             imageVector = icon,
                             contentDescription = "Favorite",

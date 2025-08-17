@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.example.dailyquotesaver.data.ApiKeyRepository
 
 private enum class AddMode { MANUAL, AI }
 
@@ -217,7 +219,7 @@ private fun AiGenerationForm(
             visible = uiState is GenerateUiState.Idle,
             enter = fadeIn() + expandVertically(),
             exit = fadeOut() + shrinkVertically()
-        ){
+        ) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 FancyButton(
                     text = "Generate",
@@ -237,6 +239,7 @@ private fun AiGenerationForm(
                     onTryAgain = { onGenerateClick() }
                 )
             }
+
             is GenerateUiState.Success -> {
                 AiSuccessView(
                     generatedQuote = uiState.quote,
@@ -247,7 +250,9 @@ private fun AiGenerationForm(
                     }
                 )
             }
-            is GenerateUiState.Idle -> { /* Nothing to show */ }
+
+            is GenerateUiState.Idle -> { /* Nothing to show */
+            }
         }
     }
 }
@@ -266,7 +271,7 @@ fun AiSuccessView(
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
 
-    ){
+        ) {
         OutlinedTextField(
             value = generatedQuote,
             onValueChange = {},
@@ -277,7 +282,7 @@ fun AiSuccessView(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
-        ){
+        ) {
             Button(onClick = { onGenerateAgain() }) {
                 Text("Generate Again")
             }
@@ -300,7 +305,7 @@ fun AiErrorView(
             .fillMaxWidth()
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-    ){
+    ) {
         Text(errorMessage, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(16.dp))
         Button(onClick = { onTryAgain() }) {

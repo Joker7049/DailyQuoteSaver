@@ -1,7 +1,6 @@
 package org.example.dailyquotesaver.ui.theme
 
 
-
 // Define the FontFamily using the bundled font
 // In your Type.kt file
 
@@ -23,7 +22,7 @@ import org.jetbrains.compose.resources.Font
 
 
 @Composable
-fun AppTypography() : Typography{
+fun AppTypography(): Typography {
 
     val GideonRomanFontFamily = FontFamily(
         // 2. We can now call the @Composable Font() function here.

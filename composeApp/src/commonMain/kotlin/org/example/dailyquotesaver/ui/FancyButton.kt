@@ -1,4 +1,3 @@
-
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -42,7 +41,8 @@ fun FancyButton(
     val disabledAlpha = 0.35f
 
     // target colors depend on enabled state
-    val targetColors = if (enabled) gradientColors else gradientColors.map { it.copy(alpha = disabledAlpha) }
+    val targetColors =
+        if (enabled) gradientColors else gradientColors.map { it.copy(alpha = disabledAlpha) }
     // animate each color so transitions look smooth
     val animatedColors = targetColors.map { animateColorAsState(targetValue = it).value }
 
@@ -50,7 +50,8 @@ fun FancyButton(
     val elevation by animateDpAsState(targetValue = if (enabled) 8.dp else 2.dp)
 
     // animate text color fade
-    val curTextColor = animateColorAsState(targetValue = if (enabled) textColor else textColor.copy(alpha = 0.7f)).value
+    val curTextColor =
+        animateColorAsState(targetValue = if (enabled) textColor else textColor.copy(alpha = 0.7f)).value
 
     Button(
         onClick = onClick,
@@ -69,14 +70,14 @@ fun FancyButton(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            if (enabled){
+            if (enabled) {
                 Text(
                     text = text,
                     color = curTextColor,
                     fontWeight = FontWeight.Bold,
                     fontSize = fontSize
                 )
-            }else{
+            } else {
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = ""

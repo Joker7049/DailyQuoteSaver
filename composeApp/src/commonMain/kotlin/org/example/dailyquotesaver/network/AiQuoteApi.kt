@@ -3,7 +3,6 @@ package org.example.dailyquotesaver.network
 // In file: network/AiQuoteApi.kt
 
 
-
 /**
  * Defines the contract for an API that can generate a quote based on a user's mood.
  * Using an interface allows us to easily swap out the implementation later

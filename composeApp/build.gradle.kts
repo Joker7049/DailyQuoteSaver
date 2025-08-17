@@ -1,4 +1,3 @@
-
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat

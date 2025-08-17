@@ -1,9 +1,6 @@
 package org.example.dailyquotesaver.ui
 
 
-
-
-
 // This sealed interface represents all possible states of the AI generation UI.
 // It will be created in App.kt and passed down to the screen.
 sealed interface GenerateUiState {

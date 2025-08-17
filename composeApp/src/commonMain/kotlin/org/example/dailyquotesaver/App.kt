@@ -97,13 +97,13 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
 
     var randomQuote by remember(allQuotes) { mutableStateOf(allQuotes.randomOrNull()) }
 
-    fun pickRandomQuote():Quote?{
+    fun pickRandomQuote(): Quote? {
         val quoteToAvoid = randomQuote
 
-        if(allQuotes.isEmpty()){
+        if (allQuotes.isEmpty()) {
             return null
         }
-        if (allQuotes.size == 1){
+        if (allQuotes.size == 1) {
             return allQuotes.first()
         }
 
@@ -124,33 +124,30 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
                         onGoToFavorites = { currentScreen = Screen.FAVORITES },
                         onGoToSettings = { currentScreen = Screen.SETTINGS }
                     )
-                }
-                else if(currentScreen == Screen.ADD_OR_GENERATE){
+                } else if (currentScreen == Screen.ADD_OR_GENERATE) {
                     TopAppBar(
                         title = { Text("Add a New Quote") },
                         navigationIcon = {
-                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                            IconButton(onClick = { currentScreen = Screen.QUOTE }) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
                         }
                     )
 
-                }
-                else if(currentScreen == Screen.FAVORITES){
+                } else if (currentScreen == Screen.FAVORITES) {
                     TopAppBar(
                         title = { Text("Favorite Quotes") },
                         navigationIcon = {
-                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                            IconButton(onClick = { currentScreen = Screen.QUOTE }) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
                         }
                     )
-                }
-                else if(currentScreen == Screen.Edit){
+                } else if (currentScreen == Screen.Edit) {
                     TopAppBar(
                         title = { Text("Edit Quote") },
                         navigationIcon = {
-                            IconButton(onClick = {currentScreen = Screen.QUOTE}) {
+                            IconButton(onClick = { currentScreen = Screen.QUOTE }) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
                         }
@@ -162,8 +159,16 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
             bottomBar = {
                 if (currentScreen == Screen.Home || currentScreen == Screen.QUOTE) {
                     val navItems = listOf(
-                        BottomNavItem(label = "Home", screen = Screen.Home, icon = Icons.Default.Home),
-                        BottomNavItem(label = "Quotes", screen = Screen.QUOTE, icon = Icons.Default.FormatQuote)
+                        BottomNavItem(
+                            label = "Home",
+                            screen = Screen.Home,
+                            icon = Icons.Default.Home
+                        ),
+                        BottomNavItem(
+                            label = "Quotes",
+                            screen = Screen.QUOTE,
+                            icon = Icons.Default.FormatQuote
+                        )
                     )
                     ElegantBottomBar(
                         navItems = navItems,
@@ -280,6 +285,7 @@ fun App(repo: QuoteRepository, apiKeyRepository: ApiKeyRepository) {
                         quote = randomQuote,
                         onRefresh = { pickRandomQuote() }
                     )
+
                     Screen.SETTINGS -> SettingsScreen(
                         apiKeyRepository = apiKeyRepository,
                         onNavigateBack = { currentScreen = Screen.QUOTE }
@@ -351,13 +357,14 @@ fun CreativeWaveBottomBar(
             }
             .background(
                 Brush.verticalGradient(
-                    if (currentScreen == Screen.Home){
+                    if (currentScreen == Screen.Home) {
                         listOf(
                             MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp).copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                                .copy(alpha = 0.1f)
                         )
                     } else {
-                         listOf(
+                        listOf(
                             MaterialTheme.colorScheme.surface,
                             MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
                         )

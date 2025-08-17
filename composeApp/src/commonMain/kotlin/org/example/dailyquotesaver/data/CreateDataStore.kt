@@ -1,8 +1,8 @@
 package org.example.dailyquotesaver.data
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import okio.Path.Companion.toPath
 
 const val DATA_STORE_FILE_NAME = "dailyquotes.preferences_pb"

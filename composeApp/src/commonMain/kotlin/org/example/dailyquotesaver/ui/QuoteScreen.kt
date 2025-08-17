@@ -58,7 +58,7 @@ fun QuoteScreen(
     onDeleteRequest: (Long) -> Unit,
     onEditClick: (Quote) -> Unit,
 
-) {
+    ) {
     val scope = rememberCoroutineScope()
 
     Column(
